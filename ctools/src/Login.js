@@ -1,16 +1,54 @@
 // Login.js
 
 import React, { useState } from 'react';
-import { Card, Form, Input, Button } from 'antd';
-import { UserOutlined, LockOutlined } from '@ant-design/icons';
+import { Card, Form, Input, Button , notification } from 'antd';
+import { UserOutlined, LockOutlined} from '@ant-design/icons';
+
 
 const Login = () => {
   const [isRegistering, setIsRegistering] = useState(false); // 添加状态来控制注册和登录视图的切换
   const isMobile = window.innerWidth <= 768; // 判断设备类型
 
-  const onFinish = (values) => {
+  const onFinish = async (values) => {
     console.log('Received values:', values);
-    // 在此处可以处理表单提交的逻辑，比如发送请求给后端进行验证等
+    // 登录逻辑
+    try {
+      const response = await fetch('http://127.0.0.1:8000/login/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          username: values.username,
+          password: values.password,
+        }),
+      });
+  
+      if (response.ok) {
+        const data = await response.json();
+        console.log('登录成功:', data);
+        notification.success({
+          message: '登录成功',
+          description: '欢迎回来！',
+        });
+        // 在这里可以处理登录成功的逻辑，比如跳转到其他页面等
+      } else {
+        const data = await response.json();
+        console.error('登录失败:', data);
+        notification.error({
+          message: '登录失败',
+          description: '请检查用户名和密码',
+        });
+        // 在这里可以处理登录失败的逻辑，比如提示错误信息等
+      }
+    } catch (error) {
+      console.error('登录异常:', error);
+      notification.error({
+        message: '登录异常',
+        description: '请稍后重试',
+      });
+      // 在这里可以处理异常情况，比如提示网络错误等
+    }
   };
 
   const toggleRegister = () => {
@@ -19,6 +57,7 @@ const Login = () => {
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      
       <Card style={{ width: isMobile ? '90%' : 300 }}>
         <h2 style={{ textAlign: 'center' }}>{isRegistering ? '注册' : '登录'}</h2> {/* 根据状态显示标题 */}
         <Form
@@ -65,6 +104,7 @@ const Login = () => {
             </Button>
           </Form.Item>
         </Form>
+        
       </Card>
     </div>
   );
